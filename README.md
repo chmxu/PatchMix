@@ -12,7 +12,7 @@ This paper is the journal extension of our AAAI paper
 [**Learning a few-shot embedding model with contrastive learning**](https://ojs.aaai.org/index.php/AAAI/article/download/17047/16854)
 <br>
 
-
+You can download our trained weights from [Google Drive Link](https://drive.google.com/drive/folders/1PfajfbrkaUvnsFvCi79T9NDMhlKwh4JB?usp=sharing).
 
 ## Acknowledgments
 
