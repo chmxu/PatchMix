@@ -101,8 +101,11 @@ def calc_sim(feat):
     feat: (n, c, h, w)
     '''
     feat = F.normalize(feat.mean(-1).mean(-1), p=2, dim=1)
-    sim = torch.matmul(feat, feat.permute(1, 0))
-    return sim.min(1)[1]
+    sim = -1 * torch.matmul(feat, feat.permute(1, 0))
+    perm, distance = solve_tsp_dynamic_programming(sim.detach().cpu().numpy())
+    perm = [perm[perm.index(i)+1] if perm.index(i)<len(perm)-1 else 0 for i in range(len(perm))]
+    perm = torch.tensor(perm)
+    return perm
 
 def patchmix_hard(model, train_img, test_img, train_label_1hot, test_label, global_label):
     test_label_patch = test_label.unsqueeze(2).unsqueeze(2).repeat(1, 1,11, 11)
