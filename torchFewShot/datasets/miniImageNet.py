@@ -54,8 +54,6 @@ class miniImageNet(object):
 
     def _process_dir(self, dir_path):
         cat_container = sorted(os.listdir(dir_path))
-        if 'test' in dir_path:
-            cat_container = cat_container[2:7]
         cats2label = {cat:label for label, cat in enumerate(cat_container)}
 
         dataset = []

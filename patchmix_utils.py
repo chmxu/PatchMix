@@ -45,6 +45,8 @@ def generate_matrix():
     y0 = np.random.choice(index, size=yd, replace=False)
     return x0, y0
 
+def precise(x):
+    return round(float(x)*11.0/84.0)
 
 def random_block(x):
     x0, y0 = generate_matrix()
@@ -70,31 +72,48 @@ def rand_bbox(size, lam):
     bby2 = np.clip(cy + cut_h // 2, 0, H)
     return bbx1, bby1, bbx2, bby2
 
-def patchmix(test_img, test_label, global_label):
-    test_label_patch = test_label.unsqueeze(2).unsqueeze(2).repeat(1, 1, 11, 11)
-    global_label_patch = global_label.unsqueeze(2).unsqueeze(2).repeat(1, 1, 11, 11)
+def patchmix(test_img, test_label, global_label, patch_size=11):
+    test_label_patch = test_label.unsqueeze(2).unsqueeze(2).repeat(1, 1, patch_size, patch_size)
+    global_label_patch = global_label.unsqueeze(2).unsqueeze(2).repeat(1, 1, patch_size, patch_size)
+    masks = []
 
     batch_size = test_img.size()[0]
+    cond_img = []
+    cond_img_ori = []
     for i in range(batch_size):
         test_label_patch_slice = test_label_patch[i]
         global_label_patch_slice = global_label_patch[i]
+        mask = torch.ones_like(test_label_patch_slice).cuda()
         input = test_img[i]
         lam = np.random.beta(1, 1)
         rand_index = torch.randperm(input.size()[0]).cuda()
         bbx1, bby1, bbx2, bby2 = rand_bbox(input.size(), lam)
+        cond_bbx1, cond_bby1, cond_bbx2, cond_bby2 = rand_bbox(input.size(), lam)
+        cond = input[rand_index, :].clone()
+        cond_img_ori.append(input[rand_index, :].clone())
+        #p = random.random()
+        #if p > 0.5:
+        cond[:, :, bbx1:bbx2, bby1:bby2] = input[:, :, bbx1:bbx2, bby1:bby2]
         input[:, :, bbx1:bbx2, bby1:bby2] = input[rand_index, :, bbx1:bbx2, bby1:bby2]
-        test_img[i] = input 
+        cond_img.append(cond)
+        test_img[i] = input
 
         #### calculate patch label
         bbx1, bby1, bbx2, bby2 = float(bbx1), float(bby1), float(bbx2), float(bby2)
-        bbx1, bby1, bbx2, bby2 = round(bbx1* 11.0/84.0), round(bby1* 11.0/84.0), round(bbx2* 11.0/84.0), round(bby2 * 11.0/84.0)
+        bbx1, bby1, bbx2, bby2 = round(bbx1* patch_size/84.0), round(bby1* patch_size/84.0), round(bbx2* patch_size/84.0), round(bby2 * patch_size/84.0)
+        #if p > 0.5:
         test_label_patch_slice[:, bbx1:bbx2, bby1:bby2] = test_label_patch_slice[rand_index, bbx1:bbx2, bby1:bby2]
         global_label_patch_slice[:, bbx1:bbx2, bby1:bby2] = global_label_patch_slice[rand_index, bbx1:bbx2, bby1:bby2]
+        mask[:, bbx1:bbx2, bby1:bby2] = 0
+        masks.append(mask)
         ### #############
-        test_label_patch[i] = test_label_patch_slice 
-        global_label_patch[i] = global_label_patch_slice 
-     
-    return test_img, test_label_patch, global_label_patch
+        test_label_patch[i] = test_label_patch_slice
+        global_label_patch[i] = global_label_patch_slice
+
+    cond_img = torch.stack(cond_img, 0)
+    cond_img_ori = torch.stack(cond_img_ori, 0)
+
+    return test_img, test_label_patch, global_label_patch, cond_img, cond_img_ori, torch.stack(masks, 0)
 
 def calc_sim(feat):
     '''

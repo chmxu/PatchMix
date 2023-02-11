@@ -44,7 +44,7 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_devices
     use_gpu = torch.cuda.is_available()
 
-    model_name = '{}-{}shot-{}-{}kernel-{}group'.format(args.dataset, args.nExemplars, args.backbone, args.kernel, args.groups)
+    model_name = '{}-{}shot-{}'.format(args.dataset, args.nExemplars, args.backbone)
 
     if args.suffix is not None:
         model_name = model_name + '-{}'.format(args.suffix)
@@ -68,7 +68,7 @@ def main():
     trainloader, testloader = dm.return_dataloaders()
 
     support = True
-    model = Model(scale_cls=args.scale_cls, num_classes=args.num_classes, groups=args.groups, kernel=args.kernel, mode=args.mode, normalize=args.normalize, cascade=args.cascade, backbone=args.backbone, ode=args.ode, depth=args.depth, support=support)
+    model = Model(num_classes=args.num_classes)
     criterion = CrossEntropyLoss()
     optimizer = init_optimizer(args.optim, model.parameters(), args.lr, args.weight_decay)
     
@@ -138,7 +138,7 @@ def train(epoch, model, criterion, optimizer, trainloader, scheduler, use_gpu, w
         labels_train_1hot = one_hot(labels_train).cuda()
         labels_test_1hot = one_hot(labels_test).cuda()
         #### patch mix
-        images_test, labels_test_patch, pids_test_patch, cond_img, cond_img_ori, masks = patchmix_v2(images_test, labels_test, pids_test, patch_size=patch_size)
+        images_test, labels_test_patch, pids_test_patch, cond_img, cond_img_ori, masks = patchmix(images_test, labels_test, pids_test, patch_size=patch_size)
         ######################
 
         ytest, cls_scores, recons, recons_logits = model(images_train, images_test, labels_train_1hot, labels_test_1hot, cond=cond_img, global_labels=pids.view(-1), masks=masks)

@@ -49,28 +49,17 @@ class DataManager(object):
                 T.RandomHorizontalFlip(),
                 T.ToTensor(),
                 T.Normalize(mean, std),
-                #T.RandomErasing(0.5)
             ])
 
             transform_test = T.Compose([
                 T.Resize((92, 92), interpolation=InterpolationMode.LANCZOS),
                 T.CenterCrop((84, 84)),
-                #T.Resize((84, 84)),
                 T.ToTensor(),
                 T.Normalize(mean, std),
             ])
 
         #pin_memory = True if use_gpu else False
         pin_memory = False
-
-        train_epoch_size = 1200 if self.collapse else args.train_epoch_size
-        #epoch_size = 1200 if self.collapse else args.epoch_size
-        epoch_size = 200
-        train_nTestNovel = args.nTestNovel if self.collapse else args.train_nTestNovel
-        train_batch = 1 if self.collapse else args.train_batch
-        test_batch = 1 if self.collapse else args.test_batch
-        if self.collapse:
-            transform_train=transform_test
         self.trainloader = DataLoader(
                 dataset_loader.init_loader(name='train_loader',
                     dataset=dataset.train,
@@ -78,13 +67,13 @@ class DataManager(object):
                     labelIds=dataset.train_labelIds,
                     nKnovel=args.nKnovel,
                     nExemplars=args.nExemplars,
-                    nTestNovel=train_nTestNovel,
-                    epoch_size=train_epoch_size,
+                    nTestNovel=args.train_nTestNovel,
+                    epoch_size=args.train_epoch_size,
                     transform=transform_train,
                     load=args.load,
                     tiered=args.tiered,   	
                 ),
-                batch_size=train_batch, shuffle=False, num_workers=args.workers,
+                batch_size=args.train_batch, shuffle=False, num_workers=args.workers,
                 pin_memory=pin_memory, drop_last=True,
             )
 
@@ -96,12 +85,12 @@ class DataManager(object):
                     nKnovel=args.nKnovel,
                     nExemplars=args.nExemplars,
                     nTestNovel=args.nTestNovel,
-                    epoch_size=epoch_size,
+                    epoch_size=args.epoch_size,
                     transform=transform_test,
                     load=args.load,
                     tiered=args.tiered,
                 ),
-                batch_size=test_batch, shuffle=False, num_workers=args.workers,
+                batch_size=args.test_batch, shuffle=False, num_workers=args.workers,
                 pin_memory=pin_memory, drop_last=False,
         )
         self.testloader = DataLoader(
@@ -112,12 +101,12 @@ class DataManager(object):
                     nKnovel=args.nKnovel,
                     nExemplars=args.nExemplars,
                     nTestNovel=args.nTestNovel,
-                    epoch_size=epoch_size,
+                    epoch_size=args.epoch_size,
                     transform=transform_test,
                     load=args.load,
                     tiered=args.tiered,
                 ),
-                batch_size=test_batch, shuffle=False, num_workers=args.workers,
+                batch_size=args.test_batch, shuffle=False, num_workers=args.workers,
                 pin_memory=pin_memory, drop_last=False,
         )
 

@@ -43,7 +43,7 @@ def main():
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu_devices
     use_gpu = torch.cuda.is_available()
 
-    model_name = '{}-{}shot-{}-{}kernel-{}group'.format(args.dataset, args.nExemplars, args.backbone, args.kernel, args.groups)
+    model_name = '{}-{}shot-{}'.format(args.dataset, args.nExemplars, args.backbone)
 
     if args.suffix is not None:
         model_name = model_name + '-{}'.format(args.suffix)
@@ -66,8 +66,8 @@ def main():
     trainloader, testloader = dm.return_dataloaders()
 
     support = True
-    model = Model(scale_cls=args.scale_cls, num_classes=args.num_classes, groups=args.groups, kernel=args.kernel, mode=args.mode, normalize=args.normalize, cascade=args.cascade, backbone=args.backbone, ode=args.ode, depth=args.depth, support=support)
-    ori_model = Model(scale_cls=args.scale_cls, num_classes=args.num_classes, groups=args.groups, kernel=args.kernel, mode=args.mode, normalize=args.normalize, cascade=args.cascade, backbone=args.backbone, ode=args.ode, depth=args.depth, support=support)
+    model = Model(num_classes=args.num_classes)
+    ori_model = Model(num_classes=args.num_classes)
     ori_model.load_state_dict(torch.load(args.resume)['state_dict'], strict=False)
     criterion = CrossEntropyLoss()
     optimizer = init_optimizer(args.optim, model.parameters(), args.lr, args.weight_decay)

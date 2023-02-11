@@ -49,21 +49,9 @@ def argument_parser():
     # ************************************************************
     # Architecture settings
     # ************************************************************
-    parser.add_argument('--depth', type=int, default=2)
-    parser.add_argument('--num_classes', type=int, default=351)
-    parser.add_argument('--scale_cls', type=int, default=1)
-    parser.add_argument('--groups', type=int, default=64)
-    parser.add_argument('--kernel', type=int, default=1)
-    parser.add_argument('--normalize', type=str, default='sigmoid')
-    parser.add_argument('--mode', type=str, default='deform')
-    parser.add_argument('--dilation', nargs='+', type=int, default=[1])
-    parser.add_argument('--cascade', action='store_true', default=True)
-    parser.add_argument('--ode', action='store_true', default=True)
+    parser.add_argument('--num_classes', type=int, default=64)
+    parser.add_argument('--temp', type=float, default=1.0)
     parser.add_argument('--backbone', type=str, default='resnet')
-
-
-
-
 
     # ************************************************************
     # Miscs
@@ -89,7 +77,7 @@ def argument_parser():
     parser.add_argument('--epoch_size', type=int, default=2000,
                         help='number of batches per epoch')
 
-    parser.add_argument('--phase', default='test', type=str,
+    parser.add_argument('--phase', default='val', type=str,
                         help='use test or val dataset to early stop')
     parser.add_argument('--seed', type=int, default=1)
 
