@@ -41,9 +41,6 @@ class Upsample(nn.Module):
             x = F.interpolate(x, size=self.size)
         return x
 
-def Normalize(in_channels):
-    return torch.nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
-
 class Decoder(nn.Module):
     def __init__(self, nin, ndim, input_size=11, output_size=84):
         super(Decoder, self).__init__()
@@ -57,7 +54,6 @@ class Decoder(nn.Module):
             ndim = ndim // 2
         self.blocks = nn.ModuleList(self.blocks)
 
-        self.out_norm = Normalize(ndim)
         self.out_conv = nn.Conv2d(ndim, 3, kernel_size=3, stride=1, padding=1)
 
     def corr_fuse(self, x, cond, mix_masks):
